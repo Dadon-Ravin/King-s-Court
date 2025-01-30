@@ -48,12 +48,22 @@ function App() {
     }
   };
 
-  const startGame = () => {
-    createGame();  // Manually start a new game if needed
+  // Handle the End Game button
+  const endGame = () => {
+    set(ref(database, 'games/gameId123/gameOver'), true).then(() => {
+      fetchGameState();  // Fetch the updated game state
+    });
   };
 
-  const endGame = () => {
-    set(ref(database, 'games/gameId123/gameOver'), true);
+  // Handle the Restart Game button
+  const startGame = () => {
+    createGame();  // Create a new game from scratch
+  };
+
+  // Get images for the cards
+  const getCardImage = (card) => {
+    const [cardType, cardColor] = card.split('_');  // e.g., ['King', 'red']
+    return `/images/${cardType}_${cardColor}.svg`.toLowerCase();  // Return the path to the image
   };
 
   return (
@@ -70,7 +80,7 @@ function App() {
           <div className="card-hand">
             {gameState.players[gameState.currentPlayer]?.hand.map((card, index) => (
               <div key={index} className="card">
-                {card}
+                <img src={getCardImage(card)} alt={card} />  {/* Display the card image */}
               </div>
             ))}
           </div>
