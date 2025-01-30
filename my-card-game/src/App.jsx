@@ -9,6 +9,8 @@ function App() {
     currentPlayer: 0,
     gameOver: false,
   });
+  const [playerId, setPlayerId] = useState(null); // Add state for player selection
+  const [isSelectingPlayer, setIsSelectingPlayer] = useState(true); // Add state for handling player selection
 
   // Fetch the game state when the component first renders
   useEffect(() => {
@@ -22,10 +24,12 @@ function App() {
       players: {
         player1: {
           name: 'Player 1',
+          color: 'red',
           hand: [...initialHand],
         },
         player2: {
           name: 'Player 2',
+          color: 'black',
           hand: [...initialHand],
         },
       },
@@ -61,10 +65,26 @@ function App() {
   };
 
   // Get images for the cards
-  const getCardImage = (card) => {
-    const [cardType, cardColor] = card.split('_');  // e.g., ['King', 'red']
-    return `/images/${cardType}_${cardColor}.svg`.toLowerCase();  // Return the path to the image
+  const getCardImage = (card, playerColor) => {
+    const imagePath = `/images/${card.toLowerCase()}_${playerColor}.svg`;  // Dynamic path using card and player color
+    return imagePath;  // Return the correct image path for the card
   };
+
+  // Handle the player selection
+  const handlePlayerSelect = (player) => {
+    setPlayerId(player);
+    setIsSelectingPlayer(false);
+  };
+
+  if (isSelectingPlayer) {
+    return (
+      <div className="player-selection">
+        <h2>Select Your Player</h2>
+        <button onClick={() => handlePlayerSelect('player1')}>Play as Player 1 (Red)</button>
+        <button onClick={() => handlePlayerSelect('player2')}>Play as Player 2 (Black)</button>
+      </div>
+    );
+  }
 
   return (
     <div className="App">
@@ -77,12 +97,16 @@ function App() {
       ) : (
         <div>
           <h2>Game is On!</h2>
-          <div className="card-hand">
-            {gameState.players[gameState.currentPlayer]?.hand.map((card, index) => (
-              <div key={index} className="card">
-                <img src={getCardImage(card)} alt={card} />  {/* Display the card image */}
-              </div>
-            ))}
+          {/* Player-Specific View */}
+          <div className="player-view">
+            <h3>{gameState.players[playerId]?.name}'s Hand</h3>
+            <div className="card-hand">
+              {gameState.players[playerId]?.hand.map((card, index) => (
+                <div key={index} className="card">
+                  <img src={getCardImage(card, gameState.players[playerId].color)} alt={card} />
+                </div>
+              ))}
+            </div>
           </div>
           <button onClick={endGame}>End Game</button>
         </div>
