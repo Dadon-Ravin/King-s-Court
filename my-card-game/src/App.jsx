@@ -1,44 +1,60 @@
-import { useState } from 'react'
-import './App.css'
-import { set } from 'firebase/database'
+import { useState, useEffect } from 'react';
+import './App.css';
+import { ref, set, get } from 'firebase/database';
+import { database } from './firebaseConfig';
 
 function App() {
   const [gameState, setGameState] = useState({
-    players: [
-      { name: 'Player 1', hand: ['King', 'Queen', 'Jack', 'Ace', 'Joker'], color: 'red' },
-      { name: 'Player 2', hand: ['King', 'Queen', 'Jack', 'Ace', 'Joker'], color: 'black' },
-    ],
+    players: [],
     currentPlayer: 0,
     gameOver: false,
   });
 
-  const getCardImage = (card, playerColor) => {    
-    // Determine the folder path based on player color
-    const colorPrefix = playerColor === 'red' ? 'red' : 'black';
-    
-    // Return the path to the card image based on the color
-    return `/images/${colorPrefix}/${card.toLowerCase()}_${colorPrefix}.svg`;
-  };
-  
-  const startGame = () => {
-    const cardHand = ['King', 'Queen', 'Jack', 'Ace', 'Joker', 'Joker']
-        setGameState({
-      players: [
-        { name: 'Player 1', hand: [...cardHand], color: 'red'},
-        { name: 'Player 2', hand: [...cardHand], color: 'black'},
-      ],
-      currentPlayer: 0,
+  // Fetch the game state when the component first renders
+  useEffect(() => {
+    fetchGameState();
+  }, []);
+
+  // Function to create a new game if it doesn't exist
+  const createGame = () => {
+    const initialHand = ['King', 'Queen', 'Jack', 'Ace', 'Joker', 'Joker'];
+    set(ref(database, 'games/gameId123'), {
+      players: {
+        player1: {
+          name: 'Player 1',
+          hand: [...initialHand],
+        },
+        player2: {
+          name: 'Player 2',
+          hand: [...initialHand],
+        },
+      },
+      currentPlayer: 'player1',
       gameOver: false,
-    })
+    }).then(() => {
+      fetchGameState();  // Fetch the game state after it's created
+    });
+  };
+
+  // Fetch the game state from Firebase
+  const fetchGameState = async () => {
+    const gameRef = ref(database, 'games/gameId123');
+    const snapshot = await get(gameRef);
+    if (snapshot.exists()) {
+      const gameData = snapshot.val();
+      setGameState(gameData);
+    } else {
+      createGame();  // If no game exists, create a new one
+    }
+  };
+
+  const startGame = () => {
+    createGame();  // Manually start a new game if needed
   };
 
   const endGame = () => {
-    setGameState({
-      ...gameState,
-      gameOver: true,
-    })
-  }
-
+    set(ref(database, 'games/gameId123/gameOver'), true);
+  };
 
   return (
     <div className="App">
@@ -52,13 +68,10 @@ function App() {
         <div>
           <h2>Game is On!</h2>
           <div className="card-hand">
-            {gameState.players[gameState.currentPlayer].hand.map((card, index) => (
-              <img 
-                key={index} 
-                src={getCardImage(card, gameState.players[gameState.currentPlayer].color)} 
-                alt={card} 
-                className="card" 
-              />
+            {gameState.players[gameState.currentPlayer]?.hand.map((card, index) => (
+              <div key={index} className="card">
+                {card}
+              </div>
             ))}
           </div>
           <button onClick={endGame}>End Game</button>
@@ -68,4 +81,4 @@ function App() {
   );
 }
 
-export default App
+export default App;
