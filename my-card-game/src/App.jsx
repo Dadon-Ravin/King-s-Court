@@ -1,13 +1,13 @@
 import './App.css';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { ref, set, onValue, update, get} from 'firebase/database';
-import { database } from './firebaseConfig';
+import { database } from './firebase/firebaseConfig';
 
 const initializeGame = async () => {
   // First create base node if missing
   await set(ref(database, 'games'), { exists: true }); 
 
-  const initialHand = ['King', 'Queen', 'Jack', 'Ace', 'Joker', 'Joker'];
+  const initialHand = ['King', 'Queen', 'Jack', 'Ace', 'Joker1', 'Joker2'];
   const gameData = {
     players: {
       player1: {
@@ -86,12 +86,11 @@ function ActiveCardSelector({ playerId, gameState }) {
       if (bothReady) {
         await update(ref(database, 'games/gameId123'), {
           currentTurn: "player1",
-          gameStartTime: Date.now()  // Add game start timestamp
         });
       }
       
       // Show confirmation feedback
-      alert('Cards submitted! Waiting for other player...');
+      ('Cards submitted! Waiting for other player...');
       
     } catch (error) {
       console.error('Submission failed:', error);
@@ -131,7 +130,7 @@ function ActiveCardSelector({ playerId, gameState }) {
 
 function App() {
   const [gameState, setGameState] = useState(null);
-  const playerId = getPlayerId();
+  const playerId = useMemo(() => getPlayerId(), []);
   const opponentId = playerId === "player1" ? "player2" : "player1";
 
   const handleResetGame = async () => {
@@ -159,7 +158,7 @@ function App() {
   }, [playerId]);
 
   if (!playerId) {
-    return <h2>Join as ?player=player1 or ?player=player2</h2>;
+    return <h2 style={{ textAlign: 'center' }}>Join as ?player=player1 or ?player=player2</h2>
   }
 
   if (!gameState) {

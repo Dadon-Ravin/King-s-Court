@@ -1,11 +1,87 @@
-/* Reset Button Styles */
-.header-controls {
+/* Selection screen improvements */
+.selection-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
   display: flex;
-  align-items: center;
-  gap: 2rem;
-  margin-bottom: 1.5rem;
+  flex-direction: column; /* Change from row to column */
+  justify-content: center; /* Centers vertically */
+  align-items: center; /* Centers horizontally */
+  padding: 2rem;
+  text-align: center;
 }
 
+.start-selection{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.card-grid {
+  display: flex;
+  grid-template-rows: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  width: 100%;
+  max-width: 800px;
+  margin: 2rem 0;
+}
+
+.card.selected {
+  transform: translateY(-10px);
+  box-shadow: 0 0 15px gold;
+}
+
+/* Base Styles */
+.app-container {
+  display: flex;
+  flex-direction: row;
+  min-height: 100vh;
+  padding: 1rem;
+}
+
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: #2c3e50;
+  color: white;
+  margin-bottom: 2rem;
+}
+
+.loading {
+  text-align: center;
+  font-size: 1.5rem;
+  padding: 2rem;
+}
+
+.error-container {
+  text-align: center;
+  padding: 2rem;
+}
+
+/* Game Board Layout */
+.game-board {
+  display: grid;
+  grid-template-rows: 1fr auto 1fr;
+  gap: 2rem;
+  flex-grow: 1;
+}
+
+.turn-display {
+  text-align: center;
+  font-size: 1.5rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  border-radius: 5px;
+  margin: 1rem auto;
+}
+
+/* Reset Button */
 .reset-button {
   padding: 0.5rem 1rem;
   background: #e74c3c;
@@ -18,123 +94,4 @@
 
 .reset-button:hover {
   background: #c0392b;
-}
-
-/* New Styles for Card Selection */
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.8);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  align-items: flex-start;
-  padding-top: 20vh;
-}
-
-.selection-prompt {
-  background: #2c3e50;
-  padding: 2rem;
-  border-radius: 10px;
-  text-align: center;
-}
-
-.selection-prompt h2 {
-  color: white;
-  margin-bottom: 1.5rem;
-}
-
-.card.selected {
-  transform: translateY(-20px);
-  box-shadow: 0 0 15px gold;
-}
-
-.confirm-button {
-  margin-top: 1.5rem;
-  padding: 0.8rem 2rem;
-  font-size: 1.1rem;
-  background: #27ae60;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.confirm-button:disabled {
-  background: #7f8c8d;
-  cursor: not-allowed;
-}
-
-/* Layout Improvements */
-.opponent-area {
-  margin-bottom: auto;
-}
-
-.player-area {
-  margin-top: auto;
-  padding-bottom: 2rem;
-}
-
-.turn-display {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 1rem 2rem;
-  border-radius: 5px;
-  font-size: 1.2rem;
-}
-
-.submission-loading {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: white;
-  font-size: 1.5rem;
-  z-index: 2000;
-}
-
-/* Card Selection Layout */
-.selection-prompt {
-  max-width: 90vw;
-  overflow-y: auto;
-  max-height: 90vh;
-}
-
-.selection-prompt .card-hand {
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 15px;
-  padding: 20px;
-}
-
-.selection-prompt h2 {
-  position: sticky;
-  top: 0;
-  background: #2c3e50;
-  padding: 1rem;
-  margin: 0;
-  z-index: 1;
-}
-
-.selection-prompt .card {
-  width: 150px;
-  height: 210px;
-}
-.selection-prompt .card img {
-  width: 100%;
-  height: 100%;
 }
