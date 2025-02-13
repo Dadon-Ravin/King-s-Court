@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { db } from '../firebase';
 import { ref, set, update, get } from 'firebase/database';
 import { getAuth } from 'firebase/auth';
+import SignOut from './SignOut';
 
 function MainPage() {
     const [gameCode, setGameCode] = useState('');
@@ -30,11 +31,21 @@ function MainPage() {
         const code = generateGameCode();
         setGameCode(code);
 
+        const player1hand = [
+            { rank: 'ace', revealed: false },
+            { rank: 'king', revealed: false },
+            { rank: 'queen', revealed: false },
+            { rank: 'jack', revealed: false },
+            { rank: 'joker1', revealed: false },
+            { rank: 'joker2', revealed: false },
+        ];
+
         // Set initial game state in Firebase with player1 as the creator
         await set(ref(db, 'games/' + code), {
             players: {
                 player1: {
                     id: user.uid,
+                    hand: player1hand,
                 },
             },
             createdAt: Date.now(),
@@ -71,11 +82,23 @@ function MainPage() {
                 }
 
                 // Add user as player2
+                const player2hand = [
+                    { rank: 'ace', revealed: false },
+                    { rank: 'king', revealed: false },
+                    { rank: 'queen', revealed: false },
+                    { rank: 'jack', revealed: false },
+                    { rank: 'joker1', revealed: false },
+                    { rank: 'joker2', revealed: false },
+                ];
+
+
+
                 await update(gameRef, {
                     players: {
                         ...gameData.players,
                         player2: {
                             id: user.uid,
+                            hand: player2hand,
                         },
                     },
                 });
@@ -91,6 +114,7 @@ function MainPage() {
 
     return (
         <div style={{ textAlign: 'center', marginTop: '50px' }}>
+            <SignOut></SignOut>
             <h1>King's Court</h1>
             <button onClick={handleCreateGame}>Create Game</button>
             <br /><br />

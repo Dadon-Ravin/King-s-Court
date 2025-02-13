@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import MainPage from './components/MainPage';
-import SignOut from './components/SignOut';
 import Lobby from './components/Lobby';
+import GameBoard from './components/Game/GameBoard';
 import { getAuth, signInAnonymously } from 'firebase/auth';
 import { ref, onValue } from 'firebase/database';
 import { db } from './firebase';
+
 
 function App() {
   const [gameCode, setGameCode] = useState(null); // Tracks game code if the user is in a game
   const [currentUserUID, setCurrentUserUID] = useState(null); // Tracks current user UID
   const [loading, setLoading] = useState(true); // For loading state
+  const [playerNumber, setPlayerNumber] = useState(null);
+  const [oppNumber, setOppNumber] = useState(null);
 
   const auth = getAuth();
 
@@ -34,6 +37,8 @@ function App() {
             const gameData = gameSnapshot.val();
             if (gameData.players.player1.id === user.uid || gameData.players.player2?.id === user.uid) {
               userInGame = gameSnapshot.key; // Store game code if user is in a game
+              (gameData.players.player1.id === user.uid ? setPlayerNumber(1) : setPlayerNumber(2));
+
             }
           });
 
@@ -52,21 +57,20 @@ function App() {
 
   return (
     <div className="App">
-      {currentUserUID ? (
-        gameCode ? (
-          <>
-            <SignOut />
-            <Lobby gameCode={gameCode} playerNumber={2} />
-          </>
+      {
+        currentUserUID ? (
+          gameCode ? (
+            <>
+              <Lobby gameCode={gameCode} playerNumber={playerNumber} />
+            </>
+          ) : (
+            <>
+              <MainPage setGameCode={setGameCode} />
+            </>
+          )
         ) : (
-          <>
-            <SignOut />
-            <MainPage setGameCode={setGameCode} />
-          </>
-        )
-      ) : (
-        <div>Please log in to play.</div> // If no user logged in
-      )}
+          <div>Please log in to play.</div> // If no user logged in
+        )}
     </div>
   );
 }
