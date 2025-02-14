@@ -1,102 +1,92 @@
 import React, { useState, useEffect } from 'react';
-import { ref, get, update } from 'firebase/database';
 import { db } from '../../firebase';
+import { ref, update, onValue } from 'firebase/database';
 import Card from './Card';
+import SignOut from '../SignOut';
+import GameBoard from './GameBoard';
 
-function SelectActive({ gameCode, playerNumber }) {
+function SelectActive({ playerNumber, gameCode }) {
     const [hand, setHand] = useState([]);
     const [selectedCards, setSelectedCards] = useState([]);
-    const [bothPlayersSubmitted, setBothPlayersSubmitted] = useState(false);
-    const [isWaiting, setIsWaiting] = useState(false);
+    const [waiting, setWaiting] = useState(false);
+    const [bothSumbit, setBothSumbit] = useState(false);
+
 
     useEffect(() => {
-        const fetchHand = async () => {
-            const gameRef = ref(db, `games/${gameCode}`);
-            const snapshot = await get(gameRef);
-            const gameData = snapshot.val();
-
-            // Get the player's hand from Firebase
-            const playerData = gameData.players[`player${playerNumber}`];
-            setHand(playerData.hand || []);
-            setBothPlayersSubmitted(gameData.players.player1?.activeCards && gameData.players.player2?.activeCards);
-        };
-
-        fetchHand();
+        const handRef = ref(db, `games/${gameCode}/players/player${playerNumber}/hand`);
+        onValue(handRef, (snapshot) => {
+            if (snapshot.exists()) {
+                setHand(snapshot.val());
+            }
+        });
     }, [gameCode, playerNumber]);
 
-    // Handle card selection and unselection
-    const handleCardClick = (card) => {
-        const isSelected = selectedCards.some((selected) => selected.rank === card.rank);
-
-        if (isSelected) {
-            setSelectedCards(selectedCards.filter((selected) => selected.rank !== card.rank)); // Unselect the card
-        } else {
-            if (selectedCards.length < 2) {
-                setSelectedCards([...selectedCards, card]); // Select the card
-            }
+    const toggleCardSelection = (card, index) => {
+        if (selectedCards.includes(index)) {
+            setSelectedCards(selectedCards.filter((i) => i !== index));
+        } else if (selectedCards.length < 2) {
+            setSelectedCards([...selectedCards, index]);
         }
     };
 
-    // Handle submit action
-    const handleSubmitSelection = async () => {
+    const handleSubmit = async () => {
         if (selectedCards.length === 2) {
-            const gameRef = ref(db, `games/${gameCode}`);
-            const snapshot = await get(gameRef);
-            const gameData = snapshot.val();
+            const activeCards = selectedCards.map((index) => hand[index]);
+            const updatedHand = hand.filter((_, index) => !selectedCards.includes(index));
 
-            const updatedPlayers = { ...gameData.players };
+            await update(ref(db, `games/${gameCode}/players/player${playerNumber}`), {
+                active1: activeCards[0],
+                active2: activeCards[1],
+                hand: updatedHand
+            });
+            setWaiting(true);
 
-            // Update player's active cards in Firebase
-            updatedPlayers[`player${playerNumber}`].activeCards = selectedCards;
-
-            // Remove selected cards from hand and update Firebase
-            updatedPlayers[`player${playerNumber}`].hand = hand.filter(
-                (card) => !selectedCards.some((selected) => selected.rank === card.rank)
-            );
-
-            await update(gameRef, { players: updatedPlayers });
-
-            console.log(`Player ${playerNumber} submitted selection`);
-
-            // Check if both players have submitted their selection
-            const bothPlayersSubmitted = updatedPlayers.player1?.activeCards && updatedPlayers.player2?.activeCards;
-            if (bothPlayersSubmitted) {
-                setBothPlayersSubmitted(true);
-            } else {
-                setIsWaiting(true);
-            }
+            // Listen for opponent's submission
+            const gameRef = ref(db, `games/${gameCode}/players`);
+            onValue(gameRef, (snapshot) => {
+                const players = snapshot.val();
+                if (players.player1?.active1 && players.player2?.active1) {
+                    setBothSumbit(true); // Transition to GameBoard
+                }
+            });
         }
     };
 
     return (
-        <div style={{ textAlign: 'center' }}>
-            <h1>Select Your Active Cards</h1>
-            {isWaiting && <p>Waiting for the other player to select their cards...</p>}
-
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-                {hand.map((card, index) => (
-                    <Card
-                        key={`${card.rank}-${playerNumber}-${index}`} // Unique key for each card
-                        color={playerNumber === 1 ? 'red' : 'black'}
-                        rank={card.rank}
-                        revealed={card.revealed}
-                        onClick={() => handleCardClick(card)}
-                        isSelected={selectedCards.some((selected) => selected.rank === card.rank)} // Visual indicator for selection
-                    />
-                ))}
-            </div>
-            <div>
-                <button
-                    onClick={handleSubmitSelection}
-                    disabled={selectedCards.length !== 2}
-                >
+        bothSumbit ? (
+            <>
+                <GameBoard />
+            </>
+        ) : (
+            <div style={{ textAlign: 'center' }}>
+                <h2>Select 2 Active Cards</h2>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+                    {hand.map((card, index) => (
+                        <div
+                            key={index}
+                            style={{
+                                boxShadow: selectedCards.includes(index)
+                                    ? `0px 0px 10px ${playerNumber === 1 ? 'red' : 'black'}`
+                                    : 'none',
+                                borderRadius: '5px',
+                                padding: '5px',
+                                cursor: 'pointer',
+                            }}
+                            onClick={() => toggleCardSelection(card, index)}
+                        >
+                            <Card rank={card.rank} revealed={true} player={playerNumber} playerNumber={playerNumber} />
+                        </div>
+                    ))}
+                </div>
+                <button onClick={handleSubmit} disabled={selectedCards.length !== 2}>
                     Submit Selection
                 </button>
+                <SignOut></SignOut>
+                {waiting && <p>Waiting for opponent...</p>}
             </div>
-
-            {bothPlayersSubmitted && <p>Both players have selected their cards. The game is now starting!</p>}
-        </div>
+        )
     );
 }
 
 export default SelectActive;
+

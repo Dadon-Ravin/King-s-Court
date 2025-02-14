@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import SignOut from './SignOut';
 import { ref, onValue } from 'firebase/database';
 import { db } from '../firebase';
-import Gameboard from './Game/SelectActive';
 import SelectActive from './Game/SelectActive';
 
 function Lobby({ gameCode, playerNumber }) {

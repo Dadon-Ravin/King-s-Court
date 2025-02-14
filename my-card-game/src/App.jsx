@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import MainPage from './components/MainPage';
 import Lobby from './components/Lobby';
-import GameBoard from './components/Game/GameBoard';
 import { getAuth, signInAnonymously } from 'firebase/auth';
 import { ref, onValue } from 'firebase/database';
 import { db } from './firebase';
