@@ -55,7 +55,7 @@ function SelectActive({ playerNumber, gameCode }) {
     return (
         bothSumbit ? (
             <>
-                <GameBoard />
+                <GameBoard gameCode={gameCode} playerNumber={playerNumber} />
             </>
         ) : (
             <div style={{ textAlign: 'center' }}>
