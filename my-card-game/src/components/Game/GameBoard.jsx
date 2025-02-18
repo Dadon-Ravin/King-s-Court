@@ -25,9 +25,32 @@ const GameBoard = ({ gameCode, playerNumber }) => {
     const yourData = gameState.players[`player${playerNumber}`];
     const opponentData = gameState.players[`player${opponentNumber}`];
 
+    const handleEndTurn = async () => {
+        // Toggle turn between "player1" and "player2"
+        const nextTurn = gameState.currentTurn === "player1" ? "player2" : "player1";
+        await update(ref(db, `games/${gameCode}`), {
+            currentTurn: nextTurn,
+        });
+    };
+
     return (
         <div className="game-board">
             <SignOut />
+
+            {/* Display current turn information */}
+            <div style={{ textAlign: 'center', margin: '10px' }}>
+                <h3>Current Turn: {gameState.currentTurn}</h3>
+            </div>
+
+            {/* End Turn Button */}
+            <div style={{ textAlign: 'center', margin: '10px' }}>
+                <button
+                    onClick={handleEndTurn}
+                    disabled={gameState.currentTurn !== `player${playerNumber}`}
+                >
+                    End Turn
+                </button>
+            </div>
 
             {/* Opponent's Hand */}
             <div className="opponent-hand">

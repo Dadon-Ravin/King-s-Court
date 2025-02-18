@@ -48,6 +48,7 @@ function MainPage() {
                     hand: player1hand,
                 },
             },
+            currentTurn: "player1",
             createdAt: Date.now(),
         });
 
